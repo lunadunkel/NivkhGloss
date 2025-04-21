@@ -17,9 +17,10 @@ def train_model(model, optimizer, train_loader, val_loader,
             optimizer.zero_grad()
             input_ids = batch['input_ids'].to(device)
             labels = batch['labels'].to(device)
+            bpe_boundary_labels = batch['bpe_boundary_labels'].to(device)
             mask = model._prepare_mask(input_ids, batch.get('mask'))
 
-            outputs = model(input_ids, mask=mask)
+            outputs = model(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
             if model.use_crf:
                 crf_loss = -model.crf(outputs['logits'], labels, mask).mean()
                 ce_loss = criterion(outputs['logits'].view(-1, outputs['logits'].size(-1)), labels.view(-1))
