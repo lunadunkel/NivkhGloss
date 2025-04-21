@@ -12,7 +12,8 @@ class MorphSegmentationRNN(BasicNeuralClassifier):
         self.hidden_dim = hidden_dim # размерность скрытого слоя
 
         self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0).to(self.device) # эмбеддинг символов 
-        self.bpe_embedding = nn.Embedding(bpe_vocab_size, embed_dim, padding_idx=0) # эмбеддинг подслов 
+        if bpe_vocab_size is not None:
+                self.bpe_embedding = nn.Embedding(bpe_vocab_size, embed_dim, padding_idx=0) # эмбеддинг подслов 
 
         self.aggregate_mode = aggregate_mode # функция аггрегации ПОКА НЕ РАБОТАЕТ
         self.use_crf = use_crf 
