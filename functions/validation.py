@@ -12,6 +12,7 @@ def validate_model(model, data_loader, device):
             input_ids = batch['input_ids'].to(device)
             labels = batch['labels'].to(device)
             mask = model._prepare_mask(input_ids, batch.get('mask'))
+            bpe_boundary_labels = batch['bpe_boundary_labels'].to(device)
             outputs = model(input_ids, mask=mask)
             if model.use_crf:
                 crf_loss = -model.crf(outputs['logits'], labels, mask).mean()
