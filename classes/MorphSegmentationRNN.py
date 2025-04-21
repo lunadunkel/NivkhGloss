@@ -19,7 +19,7 @@ class MorphSegmentationRNN(BasicNeuralClassifier):
         self.use_crf = use_crf 
         self.use_attention = use_attention
 
-        self.lstm = nn.LSTM(embed_dim, hidden_dim, num_layers=n_layers,
+        self.lstm = nn.LSTM(2*embed_dim, hidden_dim, num_layers=n_layers,
                             bidirectional=True, batch_first=True, dropout=dropout).to(self.device) # слой лстм
 
         self.dropout = nn.Dropout(dropout) # дропаут по стандарту нулевой
