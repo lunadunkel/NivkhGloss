@@ -14,7 +14,8 @@ class BasicNeuralClassifier(nn.Module):
         super().__init__()
         self.vocab_size = vocab_size
         self.labels_number = labels_number
-        self.bpe_vocab_size = bpe_vocab_size
+        if bpe_vocab_size is not None:
+                self.bpe_vocab_size = bpe_vocab_size
         self.device = device
         self.build_network(vocab_size, labels_number, bpe_vocab_size=bpe_vocab_size, **kwargs)
         self.criterion = criterion
