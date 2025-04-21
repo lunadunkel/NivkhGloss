@@ -8,7 +8,7 @@ class BasicNeuralClassifier(nn.Module):
     """ Базовый классификатор
     включает возможность:
     - CRF-слой
-    - BPE-слой
+    - BPE-слой """
     
     def __init__(self, vocab_size, labels_number, bpe_vocab_size=None, device="cpu", criterion=nn.NLLLoss(reduction="mean"), **kwargs):
         super().__init__()
