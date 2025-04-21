@@ -1,6 +1,6 @@
 import torch
 
-def validate_model(model, data_loader, device):
+def validate_model(model, data_loader, device, use_bpe=False):
     model.eval()
     total_loss = 0.0
     all_preds = []
