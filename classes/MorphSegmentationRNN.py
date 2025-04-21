@@ -1,17 +1,21 @@
 import torch
 import torch.nn as nn
-from NivkhGloss.classes.BasicNeuralClassifier import BasicNeuralClassifier
+from NivkhGloss.classes.BasicNeuralClassifier import BasicNeuralClassifierъ
+from TorchCRF import CRF
 
 class MorphSegmentationRNN(BasicNeuralClassifier):
 
     def build_network(self, vocab_size, labels_number, n_layers=1, embed_dim=32, hidden_dim=128, num_heads=4,
-                 dropout=0.0, use_crf=False, use_attention=False, aggregate_mode="last"):
+                 dropout=0.0, use_crf=False, use_attention=False, bpe_vocab_size=None, aggregate_mode="last"):
 
         self.n_layers = n_layers # количество слоев
         self.hidden_dim = hidden_dim # размерность скрытого слоя
-        self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0).to(self.device)
+
+        self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0).to(self.device) # эмбеддинг символов 
+        self.bpe_embedding = nn.Embedding(bpe_vocab_size, embed_dim, padding_idx=0) # эмбеддинг подслов 
+
         self.aggregate_mode = aggregate_mode # функция аггрегации ПОКА НЕ РАБОТАЕТ
-        self.use_crf = use_crf
+        self.use_crf = use_crf 
         self.use_attention = use_attention
 
         self.lstm = nn.LSTM(embed_dim, hidden_dim, num_layers=n_layers,
@@ -33,9 +37,19 @@ class MorphSegmentationRNN(BasicNeuralClassifier):
 
         self.log_softmax = nn.LogSoftmax(dim=-1)
 
-    def forward(self, inputs, mask=None):
-        inputs = self.embedding(inputs)
-        lstm_out, _ = self.lstm(inputs)
+    def forward(self, input_ids, bpe_boundary_labels=None, mask=None):
+        
+        input_ids = self.embedding(input_ids)
+
+        if bpe_boundary_labels is None:
+            bpe_embeddings = torch.zeros_like(input_ids)  # B * L * d_emb
+        else:
+            bpe_embeddings = self.bpe_embedding(bpe_boundary_labels)
+            
+        # объединение эмбеддингов символов и меток BPE
+        combined_embeddings = torch.cat([input_ids, bpe_embeddings], dim=-1)  # B * L * (2 * d_emb)
+        
+        lstm_out, _ = self.lstm(combined_embeddings)
         lstm_out = self.dropout(lstm_out)
         if self.use_attention: # применение attention
             output, _ = self.attention(lstm_out, lstm_out, lstm_out)
