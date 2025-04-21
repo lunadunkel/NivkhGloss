@@ -12,9 +12,12 @@ def validate_model(model, data_loader, device, use_bpe=False):
             input_ids = batch['input_ids'].to(device)
             labels = batch['labels'].to(device)
             mask = model._prepare_mask(input_ids, batch.get('mask'))
-            if 'bpe_boundary_labels' in bpe_boundary_labels:
-                bpe_boundary_labels = batch['bpe_boundary_labels'].to(device)
-                outputs = model(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
+            if use_bpe:
+                if 'bpe_boundary_labels' in bpe_boundary_labels:
+                    bpe_boundary_labels = batch['bpe_boundary_labels'].to(device)
+                    outputs = model(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
+                else:
+                    raise KeyError("BPE labels required in dataset")
             else:
                 outputs = model(input_ids, mask=mask)
             if model.use_crf:
