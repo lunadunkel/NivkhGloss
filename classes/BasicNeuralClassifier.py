@@ -35,7 +35,6 @@ class BasicNeuralClassifier(nn.Module):
             outputs = self(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
 
             if self.use_crf: # использование CRF
-                
                 return self.crf.viterbi_decode(outputs["logits"], mask)
             else:
                 preds = torch.argmax(outputs["log_probs"], dim=-1).cpu().tolist()
