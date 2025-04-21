@@ -15,9 +15,12 @@ class BasicNeuralClassifier(nn.Module):
         self.vocab_size = vocab_size
         self.labels_number = labels_number
         if bpe_vocab_size is not None:
-                self.bpe_vocab_size = bpe_vocab_size
+            self.bpe_vocab_size = bpe_vocab_size
         self.device = device
-        self.build_network(vocab_size, labels_number, bpe_vocab_size=bpe_vocab_size, **kwargs)
+        if bpe_vocab_size is not None:
+            self.build_network(vocab_size, labels_number, bpe_vocab_size=bpe_vocab_size, **kwargs)
+        else:
+            self.build_network(vocab_size, labels_number, **kwargs)
         self.criterion = criterion
 
     def build_network(self, vocab_size, labels_number, bpe_vocab_size=None, **kwargs):
