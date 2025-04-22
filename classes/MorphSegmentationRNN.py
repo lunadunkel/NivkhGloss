@@ -18,7 +18,7 @@ class MorphSegmentationRNN(BasicNeuralClassifier):
         if self.use_bpe and bpe_vocab_size is not None:
             self.bpe_embedding = nn.Embedding(bpe_vocab_size, embed_dim, padding_idx=0).to(self.device)
 
-        self.aggregate_mode = aggregate_mode  # функция агрегации (пока не работает)
+        self.aggregate_mode = aggregate_mode 
         self.use_crf = use_crf
         self.use_attention = use_attention
 
@@ -76,6 +76,32 @@ class MorphSegmentationRNN(BasicNeuralClassifier):
             output, _ = self.attention(lstm_out, lstm_out, lstm_out)
         else:
             output = lstm_out
+
+        if self.aggregate_mode == "last":
+            # последний элемент последовательности
+            if mask is not None:
+                lengths = mask.sum(dim=1)  # Длины последовательностей
+                batch_indices = torch.arange(output.size(0), device=self.device)
+                aggregated_output = output[batch_indices, lengths - 1]
+            else:
+                aggregated_output = output[:, -1, :]  # Последний элемент
+        elif self.aggregate_mode == "mean":
+            # усреднение всех элементов последовательности
+            if mask is not None:
+                mask = mask.unsqueeze(-1)  # расширение маски для совместимости с выходом
+                output = output * mask
+                lengths = mask.sum(dim=1)  # Длины последовательностей
+                aggregated_output = output.sum(dim=1) / lengths.clamp(min=1)
+            else:
+                aggregated_output = output.mean(dim=1)
+        elif self.aggregate_mode == "max":
+            # максимальное значение по всей последовательности
+            if mask is not None:
+                mask = mask.unsqueeze(-1)  
+                output = output.masked_fill(~mask.bool(), float('-inf')) 
+            aggregated_output = output.max(dim=1)[0]
+        else:
+            raise ValueError(f"Unsupported aggregation mode: {self.aggregate_mode}")
 
         logits = self.dense(output)
 
