@@ -29,7 +29,7 @@ def train_model(model, optimizer, train_loader, val_loader, use_bpe=False,
                 
             if model.use_crf:
                 crf_loss = -model.crf(outputs['logits'], labels, mask).mean()
-                ce_loss = criterion(outputs['logits'].view(-1, outputs['logits'].size(-1)), labels.view(-1))
+                ce_loss = model.criterion(outputs['logits'].view(-1, outputs['logits'].size(-1)), labels.view(-1))
                 loss = crf_loss + ce_loss
             else:
                 loss = model.criterion(
