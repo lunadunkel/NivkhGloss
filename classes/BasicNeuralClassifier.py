@@ -10,17 +10,21 @@ class BasicNeuralClassifier(nn.Module):
     - CRF-слой
     - BPE-слой """
     
-    def __init__(self, vocab_size, labels_number, bpe_vocab_size=None, device="cpu", criterion=nn.NLLLoss(reduction="mean"), **kwargs):
+    def __init__(self, vocab_size, labels_number, bpe_vocab_size=None, use_bpe=False, device="cpu", criterion=nn.NLLLoss(reduction="mean"), **kwargs):
         super().__init__()
         self.vocab_size = vocab_size
         self.labels_number = labels_number
-        if bpe_vocab_size is not None:
+        self.use_bpe = use_bpe  # использование BPE
+        if self.use_bpe and bpe_vocab_size is not None:
             self.bpe_vocab_size = bpe_vocab_size
         self.device = device
-        if bpe_vocab_size is not None:
+        
+        # учет BPE
+        if self.use_bpe and bpe_vocab_size is not None:
             self.build_network(vocab_size, labels_number, bpe_vocab_size=bpe_vocab_size, **kwargs)
         else:
             self.build_network(vocab_size, labels_number, **kwargs)
+        
         self.criterion = criterion
 
     def build_network(self, vocab_size, labels_number, bpe_vocab_size=None, **kwargs):
@@ -34,13 +38,18 @@ class BasicNeuralClassifier(nn.Module):
         with torch.no_grad():
             input_ids = input_ids.to(self.device)
             mask = self._prepare_mask(input_ids, mask)
-            if bpe_boundary_labels is not None:
-                bpe_boundary_labels = bpe_boundary_labels.to(self.device)
-                outputs = self(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
+            
+            # если BPE используется, передаем bpe_boundary_labels
+            if self.use_bpe:
+                if bpe_boundary_labels is not None:
+                    bpe_boundary_labels = bpe_boundary_labels.to(self.device)
+                    outputs = self(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
+                else:
+                    raise KeyError('use_bpe=True: BPE boundary labels are required')
             else:
                 outputs = self(input_ids, mask=mask)
 
-            if self.use_crf: # использование CRF
+            if self.use_crf:  # использование CRF
                 return self.crf.viterbi_decode(outputs["logits"], mask)
             else:
                 preds = torch.argmax(outputs["log_probs"], dim=-1).cpu().tolist()
