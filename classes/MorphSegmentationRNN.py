@@ -6,56 +6,77 @@ from TorchCRF import CRF
 class MorphSegmentationRNN(BasicNeuralClassifier):
 
     def build_network(self, vocab_size, labels_number, n_layers=1, embed_dim=32, hidden_dim=128, num_heads=4,
-                 dropout=0.0, use_crf=False, use_attention=False, bpe_vocab_size=None, aggregate_mode="last"):
+                      dropout=0.0, use_crf=False, use_attention=False, bpe_vocab_size=None, aggregate_mode="last"):
 
-        self.n_layers = n_layers # количество слоев
-        self.hidden_dim = hidden_dim # размерность скрытого слоя
+        self.n_layers = n_layers  # количество слоев
+        self.hidden_dim = hidden_dim  # размерность скрытого слоя
 
-        self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0).to(self.device) # эмбеддинг символов 
-        if bpe_vocab_size is not None:
-                self.bpe_embedding = nn.Embedding(bpe_vocab_size, embed_dim, padding_idx=0) # эмбеддинг подслов 
+        # инициализация эмбеддингов символов
+        self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0).to(self.device)
 
-        self.aggregate_mode = aggregate_mode # функция аггрегации ПОКА НЕ РАБОТАЕТ
-        self.use_crf = use_crf 
+        # инициализация BPE-эмбеддингов, если используется BPE
+        if self.use_bpe and bpe_vocab_size is not None:
+            self.bpe_embedding = nn.Embedding(bpe_vocab_size, embed_dim, padding_idx=0).to(self.device)
+
+        self.aggregate_mode = aggregate_mode  # функция агрегации (пока не работает)
+        self.use_crf = use_crf
         self.use_attention = use_attention
 
-        self.lstm = nn.LSTM(2*embed_dim, hidden_dim, num_layers=n_layers,
-                            bidirectional=True, batch_first=True, dropout=dropout).to(self.device) # слой лстм
+        # инициализация LSTM
+        self.lstm = nn.LSTM(
+            2 * embed_dim if self.use_bpe else embed_dim,
+            hidden_dim,
+            num_layers=n_layers,
+            bidirectional=True,
+            batch_first=True,
+            dropout=dropout
+        ).to(self.device)
 
-        self.dropout = nn.Dropout(dropout) # дропаут по стандарту нулевой
+        self.dropout = nn.Dropout(dropout)  # дропаут по стандарту нулевой
 
+        # инициализация слоя внимания
         if self.use_attention:
             self.attention = nn.MultiheadAttention(
                 embed_dim=2 * hidden_dim,
                 num_heads=num_heads,
                 batch_first=True
-            ).to(self.device) # слой внимания
+            ).to(self.device)
 
+        # полносвязный слой
         self.dense = nn.Linear(hidden_dim * 2, labels_number).to(self.device)
 
+        # инициализация CRF-слоя
         if self.use_crf:
-            self.crf = CRF(labels_number).to(self.device) # слой CRF
+            self.crf = CRF(labels_number).to(self.device)
 
         self.log_softmax = nn.LogSoftmax(dim=-1)
 
     def forward(self, input_ids, bpe_boundary_labels=None, mask=None):
-        
+        # получение эмбеддингов символов
         input_ids = self.embedding(input_ids)
 
-        if bpe_boundary_labels is None:
-            bpe_embeddings = torch.zeros_like(input_ids)  # B * L * d_emb
-        else:
-            bpe_embeddings = self.bpe_embedding(bpe_boundary_labels)
+        # если BPE используется, получаем BPE-эмбеддинги
+        if self.use_bpe:
+            if bpe_boundary_labels is None:
+                raise KeyError('use_bpe=True: BPE boundary labels are required')
+            else:
+                bpe_embeddings = self.bpe_embedding(bpe_boundary_labels)
             
-        # объединение эмбеддингов символов и меток BPE
-        combined_embeddings = torch.cat([input_ids, bpe_embeddings], dim=-1)  # B * L * (2 * d_emb)
-        
+            # объединение эмбеддингов символов и меток BPE
+            combined_embeddings = torch.cat([input_ids, bpe_embeddings], dim=-1)  # B * L * (2 * d_emb)
+        else:
+            combined_embeddings = input_ids
+
+        # применение LSTM
         lstm_out, _ = self.lstm(combined_embeddings)
         lstm_out = self.dropout(lstm_out)
-        if self.use_attention: # применение attention
+
+        # применение механизма внимания
+        if self.use_attention:
             output, _ = self.attention(lstm_out, lstm_out, lstm_out)
         else:
             output = lstm_out
+
         logits = self.dense(output)
 
         if self.use_crf:
