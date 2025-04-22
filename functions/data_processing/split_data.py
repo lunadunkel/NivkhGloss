@@ -36,7 +36,6 @@ def split_data(data):
                 'segmented': v.segmented,
                 'glossed': v.glossed,
                 'translation': v.translation,
-                'metadata': v.metadata,
                 'id': v.id,
                 'sent': v.sent,
                 'bio_tag': v.bio_tag}
