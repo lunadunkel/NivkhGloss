@@ -37,7 +37,7 @@ def split_data(data):
                 'glossed': v.glossed,
                 'translation': v.translation,
                 'id': v.id,
-                'sents': v.sent,
+                'sents': v.sents,
                 'bio_tag': v.bio_tag}
             all_data[sample].append(formatted)
     return all_data['train'], all_data['eval'], all_data['test']
