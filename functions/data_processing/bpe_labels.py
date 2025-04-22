@@ -1,3 +1,5 @@
+import re
+
 def get_bpe_boundary_labels(sentence, bpe_subwords):
     characters = list(sentence)
     labels = [0] * len(characters)
