@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-# from torchcrf import CRF 
 from NivkhGloss.classes.BasicNeuralClassifier import BasicNeuralClassifier
 
 
@@ -8,10 +7,9 @@ class MultilayerConvTagger(BasicNeuralClassifier):
 
     def build_network(self, vocab_size, labels_number, embeddings_dim=32,
                       n_layers=1, window=5, hidden_dim=128, dropout=0.0,
-                      use_batch_norm=False, use_attention=False, use_lstm=False, use_crf=False):
+                      use_batch_norm=False, use_attention=False, use_lstm=False):
 
         self.n_layers = n_layers
-
         self.use_attention = use_attention
         self.use_lstm = use_lstm
         self.use_crf = use_crf 
@@ -63,10 +61,7 @@ class MultilayerConvTagger(BasicNeuralClassifier):
             nn.Linear(128, labels_number)
         )
 
-        if self.use_crf:
-            self.crf = CRF(num_tags=labels_number, batch_first=True)
-        else:
-            self.log_softmax = nn.LogSoftmax(dim=-1)
+        self.log_softmax = nn.LogSoftmax(dim=-1)
 
     def forward(self, input_ids, labels=None, mask=None, **kwargs):
         
@@ -97,15 +92,6 @@ class MultilayerConvTagger(BasicNeuralClassifier):
 
         logits = self.dense(conv_outputs)  # B * L * labels_number
 
-        if self.use_crf:
-            if labels is not None:
-
-                loss = -self.crf(logits, labels, mask=mask, reduction='mean')
-                return {"loss": loss}
-            else:
-                best_path = self.crf.decode(logits, mask=mask)
-                return {"labels": best_path}
-        else:
-            log_probs = self.log_softmax(logits)
-            _, labels = torch.max(log_probs, dim=-1)
-            return {"log_probs": log_probs, "labels": labels}
+        log_probs = self.log_softmax(logits)
+        _, labels = torch.max(log_probs, dim=-1)
+        return {"log_probs": log_probs, "labels": labels}
