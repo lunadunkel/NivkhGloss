@@ -34,8 +34,8 @@ def validate_model(model, data_loader, device, use_bpe=False):
 
             if model.use_crf:
                 preds = model.crf.viterbi_decode(outputs['logits'], mask)
-                labels = [label[:torch.sum(m).item()] for label, m in zip(labels.cpu().tolist(), mask.cpu().tolist())]
-                mask = [m[:torch.sum(m).item()] for m in mask.cpu().tolist()]
+                labels = [label[:torch.sum(m).item()] for label, m in zip(labels.cpu(), mask.cpu())]
+                mask = [m[:torch.sum(m).item()].tolist() for m in mask.cpu()]
             else:
                 preds = torch.argmax(outputs['log_probs'], dim=-1).cpu().tolist()
 
