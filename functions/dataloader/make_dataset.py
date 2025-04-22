@@ -3,7 +3,7 @@ from NivkhGloss.add_info.char_dict import char_dict
 from NivkhGloss.add_info.label_dict import label_dict
 
 def encode_sample(word, labels, device='cpu'):
-    x = torch.tensor([char_dict[char] for char in word], dtype=torch.int64).to(device)
+    x = torch.tensor([char_dict[char] for char in word if char in char_dict else '<UNK>'], dtype=torch.int64).to(device)
     y = torch.tensor([label_dict[label] for label in labels], dtype=torch.int64).to(device)
     return x, y
 
