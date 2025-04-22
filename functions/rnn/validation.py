@@ -20,26 +20,21 @@ def validate_model(model, data_loader, device, use_bpe=False):
                     raise KeyError("BPE labels required in dataset")
             else:
                 outputs = model(input_ids, mask=mask)
-            if model.use_crf:
-                crf_loss = -model.crf(outputs['logits'], labels, mask).mean()
-                ce_loss = model.criterion(outputs['logits'].view(-1, outputs['logits'].size(-1)), labels.view(-1))
-                loss = crf_loss + ce_loss
-            else:
-                loss = model.criterion(
-                    outputs['log_probs'].view(-1, outputs['log_probs'].size(-1)),
-                    labels.view(-1)
-                )
-                loss = (loss * mask.view(-1)).sum() / mask.sum()
+
+            loss = model.criterion(
+                outputs['log_probs'].view(-1, outputs['log_probs'].size(-1)),
+                labels.view(-1)
+            )
+            loss = (loss * mask.view(-1)).sum() / mask.sum()
             total_loss += loss.item()
 
-            if model.use_crf:
-                preds = model.crf.viterbi_decode(outputs['logits'], mask)
-                labels = [label[:torch.sum(m).item()] for label, m in zip(labels.cpu(), mask.cpu())]
-                mask = [m[:torch.sum(m).item()].tolist() for m in mask.cpu()]
-            else:
-                preds = torch.argmax(outputs['log_probs'], dim=-1).cpu().tolist()
-                labels = labels.cpu().tolist()
-                mask = mask.cpu().tolist()
+            preds = torch.argmax(outputs['log_probs'], dim=-1).cpu().tolist()
+            labels = labels.cpu().tolist()
+            mask = mask.cpu().tolist()
+
+            for p, l, m in zip(preds, labels, mask):
+                if len(p) != len(l) or len(p) != len(m):
+                    raise ValueError(f"Length mismatch: preds={len(p)}, labels={len(l)}, mask={len(m)}")
 
             all_preds.extend(preds)
             all_labels.extend(labels)

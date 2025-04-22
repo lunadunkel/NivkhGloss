@@ -1,7 +1,6 @@
 import os
 import torch
 from tqdm import tqdm
-from NivkhGloss.functions.validation import validate_model
 
 def train_model(model, optimizer, train_loader, val_loader, use_bpe=False, 
     device="cpu", checkpoint_dir="checkpoints", num_epochs=25, patience=3):
@@ -26,18 +25,13 @@ def train_model(model, optimizer, train_loader, val_loader, use_bpe=False,
                     raise KeyError("BPE labels required in dataset")
             else:
                 outputs = model(input_ids, mask=mask)
-                
-            if model.use_crf:
-                crf_loss = -model.crf(outputs['logits'], labels, mask).mean()
-                ce_loss = model.criterion(outputs['logits'].view(-1, outputs['logits'].size(-1)), labels.view(-1))
-                loss = crf_loss + ce_loss
-            else:
-                loss = model.criterion(
-                    outputs['log_probs'].view(-1, outputs['log_probs'].size(-1)),
-                    labels.view(-1)
-                )
-                mask = mask.view(-1)
-                loss = (loss * mask).sum() / mask.sum()
+
+            loss = model.criterion(
+                outputs['log_probs'].view(-1, outputs['log_probs'].size(-1)),
+                labels.view(-1)
+            )
+            mask = mask.view(-1)
+            loss = (loss * mask).sum() / mask.sum()
 
             loss.backward()
             optimizer.step()
