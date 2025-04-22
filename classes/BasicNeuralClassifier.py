@@ -34,7 +34,7 @@ class BasicNeuralClassifier(nn.Module):
         with torch.no_grad():
             input_ids = input_ids.to(self.device)
             mask = self._prepare_mask(input_ids, mask)
-            if bpe_boundary_labels is None:
+            if bpe_boundary_labels is not None:
                 bpe_boundary_labels = bpe_boundary_labels.to(self.device)
                 outputs = self(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
             else:
