@@ -6,7 +6,7 @@ from TorchCRF import CRF
 class MorphSegmentationRNN(BasicNeuralClassifier):
 
     def build_network(self, vocab_size, labels_number, n_layers=1, embed_dim=32, hidden_dim=128, num_heads=4,
-                      dropout=0.0, use_crf=False, use_attention=False, bpe_vocab_size=None, aggregate_mode="last"):
+                      dropout=0.0, use_attention=False, bpe_vocab_size=None, aggregate_mode="last"):
 
         self.n_layers = n_layers  # количество слоев
         self.hidden_dim = hidden_dim  # размерность скрытого слоя
@@ -19,7 +19,6 @@ class MorphSegmentationRNN(BasicNeuralClassifier):
             self.bpe_embedding = nn.Embedding(bpe_vocab_size, embed_dim, padding_idx=0).to(self.device)
 
         self.aggregate_mode = aggregate_mode 
-        self.use_crf = use_crf
         self.use_attention = use_attention
 
         # инициализация LSTM
@@ -44,10 +43,6 @@ class MorphSegmentationRNN(BasicNeuralClassifier):
 
         # полносвязный слой
         self.dense = nn.Linear(hidden_dim * 2, labels_number).to(self.device)
-
-        # инициализация CRF-слоя
-        if self.use_crf:
-            self.crf = CRF(labels_number).to(self.device)
 
         self.log_softmax = nn.LogSoftmax(dim=-1)
 
@@ -105,8 +100,5 @@ class MorphSegmentationRNN(BasicNeuralClassifier):
 
         logits = self.dense(output)
 
-        if self.use_crf:
-            return {"logits": logits}
-        else:
-            log_probs = self.log_softmax(logits)
-            return {"log_probs": log_probs}
+        log_probs = self.log_softmax(logits)
+        return {"log_probs": log_probs}
