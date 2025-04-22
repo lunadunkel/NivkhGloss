@@ -1,3 +1,5 @@
+from NivkhGloss.functions.data_processing.bpe_labels import get_bpe_boundary_labels
+
 def sample_with_bpe(sp, sample):
     new_sample = []
     for sent in sample:
