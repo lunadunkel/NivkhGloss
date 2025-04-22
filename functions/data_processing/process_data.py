@@ -40,7 +40,7 @@ def clear_data(path, filename):
                               'segmented': segmentation,
                               'glossed': glossing,
                               'translation': line,
-                              'text_id': filename,
+                              'id': filename,
                               'sents':  numbers}
                 segmented, glossed, numbers = [], [], []
 
