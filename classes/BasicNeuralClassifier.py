@@ -33,9 +33,12 @@ class BasicNeuralClassifier(nn.Module):
         self.eval()
         with torch.no_grad():
             input_ids = input_ids.to(self.device)
-            bpe_boundary_labels = bpe_boundary_labels.to(self.device) if bpe_boundary_labels is not None else None
             mask = self._prepare_mask(input_ids, mask)
-            outputs = self(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
+            if bpe_boundary_labels is None:
+                bpe_boundary_labels = bpe_boundary_labels.to(self.device)
+                outputs = self(input_ids, bpe_boundary_labels=bpe_boundary_labels, mask=mask)
+            else:
+                outputs = self(input_ids, mask=mask)
 
             if self.use_crf: # использование CRF
                 return self.crf.viterbi_decode(outputs["logits"], mask)
