@@ -42,7 +42,7 @@ def validate_model(model, data_loader, device, use_bpe=False):
                 mask = mask.cpu().tolist()
 
             all_preds.extend(preds)
-            all_labels.extend(labels.cpu().tolist())
+            all_labels.extend(labels)
             all_masks.extend(mask)
     accuracy = model.calculate_accuracy(all_labels, all_preds, all_masks)
     word_level_accuracy = model.calculate_word_level_accuracy(all_labels, all_preds)
