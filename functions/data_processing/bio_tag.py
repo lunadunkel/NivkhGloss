@@ -13,10 +13,6 @@ def make_bio(segm):
             bio_tag.append('O')
             continue
 
-        if re.match('[\t:\[\].,:;!?]', letter):
-            bio_tag.append('O')
-            continue
-
         if new_begining:
             bio_tag.append('B')
             new_begining = False
