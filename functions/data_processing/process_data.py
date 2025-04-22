@@ -35,7 +35,7 @@ def clear_data(path, filename):
                     continue
                 glossing = '\t'.join(glossed)
                 line = re.sub('_+', '', line)
-                line = re.sub('\d+\=\t+', '', line)
+                line = re.sub('\d+\=[\t ]+', '', line)
                 dictionary = {'original': segmentation.replace('-', ''),
                               'segmented': segmentation,
                               'glossed': glossing,
