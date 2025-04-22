@@ -7,9 +7,8 @@ def sample_with_bpe(sp, sample):
                     'segmented': sent['segmented'],
                     'glossed': sent['glossed'],
                     'translation': sent['translation'],
-                    'metadata': sent['metadata'],
                     'id': sent['id'],
-                    'sent': sent['sent'],
+                    'sents': sent['sents'],
                     'bio_tag': sent['bio_tag']}
         bpe_subwords = sp.encode_as_pieces(sent['original'])
         sentence = (sent['original'])
