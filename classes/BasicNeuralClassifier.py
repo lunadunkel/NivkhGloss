@@ -7,7 +7,6 @@ from TorchCRF import CRF
 class BasicNeuralClassifier(nn.Module):
     """ Базовый классификатор
     включает возможность:
-    - CRF-слой
     - BPE-слой """
     
     def __init__(self, vocab_size, labels_number, bpe_vocab_size=None, use_bpe=False, device="cpu", criterion=nn.NLLLoss(reduction="mean"), **kwargs):
@@ -49,11 +48,8 @@ class BasicNeuralClassifier(nn.Module):
             else:
                 outputs = self(input_ids, mask=mask)
 
-            if self.use_crf:  # использование CRF
-                return self.crf.viterbi_decode(outputs["logits"], mask)
-            else:
-                preds = torch.argmax(outputs["log_probs"], dim=-1).cpu().tolist()
-                return [pred[:torch.sum(m).item()] for pred, m in zip(preds, mask)]
+            preds = torch.argmax(outputs["log_probs"], dim=-1).cpu().tolist()
+            return [pred[:torch.sum(m).item()] for pred, m in zip(preds, mask)]
 
     def _prepare_mask(self, input_ids, mask):
         if mask is None:
