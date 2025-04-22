@@ -7,14 +7,14 @@ def encode_sample(word, labels, device='cpu'):
     y = torch.tensor([label_dict[label] for label in labels], dtype=torch.int64).to(device)
     return x, y
 
-def make_dataset(data, use_bpe=False):
+def make_dataset(data, use_bpe=False, device='cuda'):
     dataset = []
     for idx, sent in enumerate(data):
         original = sent['segmented'].replace('-', '')
-        x, y = encode_sample(original, sent['bio_tag'], device='cuda')
+        x, y = encode_sample(original, sent['bio_tag'], device=device)
         mask = (x != 0)
         dictionary = {'index': idx,'input_ids': x, 'labels': y, 'mask': mask}
         if use_bpe: 
-            dictionary['bpe_boundary_labels'] = sent['bpe_tag']
+            dictionary['bpe_boundary_labels'] = torch.tensor(sent['bpe_tag'], dtype=torch.int64).to(device)
         dataset.append(dictionary)
     return dataset
