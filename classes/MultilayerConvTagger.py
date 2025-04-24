@@ -1,18 +1,18 @@
-import torch
-import torch.nn as nn
-from NivkhGloss.classes.BasicNeuralClassifier import BasicNeuralClassifier
-
-
 class MultilayerConvTagger(BasicNeuralClassifier):
 
-    def build_network(self, vocab_size, labels_number, embeddings_dim=32,
-                      n_layers=1, window=5, hidden_dim=128, dropout=0.0,
+    def build_network(self, vocab_size, labels_number, embeddings_dim=32, use_bpe=False,
+                      n_layers=1, window=5, hidden_dim=128, dropout=0.0, bpe_vocab_size=None,
                       use_batch_norm=False, use_attention=False, use_lstm=False):
 
         self.n_layers = n_layers
+
         self.use_attention = use_attention
         self.use_lstm = use_lstm
-        self.use_crf = use_crf 
+        self.use_bpe = use_bpe
+
+        if self.use_bpe and bpe_vocab_size is not None:
+            self.bpe_vocab_size = bpe_vocab_size
+            self.bpe_embedding = nn.Embedding(bpe_vocab_size, embeddings_dim, padding_idx=0)
 
         match hidden_dim:
             case int():
@@ -31,6 +31,9 @@ class MultilayerConvTagger(BasicNeuralClassifier):
         self.use_batch_norm = use_batch_norm
         self.embedding = nn.Embedding(vocab_size, embeddings_dim, padding_idx=0)
 
+        if self.use_bpe:
+            embeddings_dim = 2 * embeddings_dim
+
         self.convolutions = nn.ModuleList()
         for i in range(self.n_layers):
             input_dim = output_dim if i > 0 else embeddings_dim
@@ -38,7 +41,7 @@ class MultilayerConvTagger(BasicNeuralClassifier):
             output_dim = 0
             for n_out, width in zip(self.hidden_dim[i], self.window[i]):
                 convolution = nn.Conv1d(input_dim, n_out, width,
-                                        padding=(width - 1) // 2, stride=1)
+                                        padding=(width-1)//2, stride=1)
                 convolutions.append(convolution)
                 output_dim += n_out
             layer = {
@@ -50,26 +53,31 @@ class MultilayerConvTagger(BasicNeuralClassifier):
                 layer["batch_norm"] = nn.BatchNorm1d(output_dim)
             self.convolutions.append(nn.ModuleDict(layer))
 
+
         self.lstm = nn.LSTM(output_dim, hidden_size=256,
                             num_layers=1, batch_first=True, bidirectional=True)
 
-        self.attention = nn.MultiheadAttention(embed_dim=output_dim, num_heads=4)
 
+        self.attention = nn.MultiheadAttention(embed_dim=output_dim, num_heads=4)
+        # print(output_dim)
         self.dense = nn.Sequential(
             nn.Linear(output_dim, 128),
             nn.ReLU(),
-            nn.Linear(128, labels_number)
-        )
-
+           nn.Linear(128, labels_number))
+        # self.dense = nn.Linear(output_dim, labels_number)
         self.log_softmax = nn.LogSoftmax(dim=-1)
 
-    def forward(self, input_ids, labels=None, mask=None, **kwargs):
-        
+
+    def forward(self, input_ids, bpe_boundary_labels=None, **kwargs):
         if self.device is not None:
             input_ids = input_ids.to(self.device)
-        embeddings = self.embedding(input_ids)  # B * L * d_emb
+        embeddings = self.embedding(input_ids) # B * L * d_emb
 
-        conv_inputs = embeddings.permute([0, 2, 1])  # B * d_emb * L
+        if self.use_bpe and bpe_boundary_labels is not None:
+            bpe_embeddings = self.bpe_embedding(bpe_boundary_labels)
+            embeddings = torch.cat([embeddings, bpe_embeddings], dim=-1) 
+            
+        conv_inputs = embeddings.permute([0, 2, 1]) # B * d_emb * L
         for layer in self.convolutions:
             conv_outputs_list = []
             for convolution in layer["convolutions"]:
@@ -83,15 +91,15 @@ class MultilayerConvTagger(BasicNeuralClassifier):
         conv_outputs = conv_outputs.permute([0, 2, 1])
 
         if self.use_lstm:
+            # conv_outputs = conv_outputs.permute(1, 0, 2)
             conv_outputs, _ = self.lstm(conv_outputs)
 
         if self.use_attention:
-            conv_outputs = conv_outputs.permute(1, 0, 2)  # (L, B, D)
+            conv_outputs = conv_outputs.permute(1, 0, 2) # (L, B, D)
             conv_outputs, _ = self.attention(conv_outputs, conv_outputs, conv_outputs)
             conv_outputs = conv_outputs.permute(1, 0, 2)
-
-        logits = self.dense(conv_outputs)  # B * L * labels_number
-
+        # финальный слой
+        logits = self.dense(conv_outputs) # B * L * labels_number
         log_probs = self.log_softmax(logits)
         _, labels = torch.max(log_probs, dim=-1)
         return {"log_probs": log_probs, "labels": labels}
