@@ -1,3 +1,7 @@
+import torch
+import torch.nn as nn
+from NivkhGloss.classes.BasicNeuralClassifier import BasicNeuralClassifier
+
 class MultilayerConvTagger(BasicNeuralClassifier):
 
     def build_network(self, vocab_size, labels_number, embeddings_dim=32, use_bpe=False,
