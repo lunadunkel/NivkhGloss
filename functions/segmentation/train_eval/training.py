@@ -1,7 +1,7 @@
 import os
 import torch
 from tqdm import tqdm
-from NivkhGloss.functions.rnn.validation import validate_model
+from NivkhGloss.functions.segmentation.train_eval.validation import validate_model
 
 def train_model(model, optimizer, train_loader, val_loader, use_bpe=False, 
     device="cpu", checkpoint_dir="checkpoints", num_epochs=25, patience=3):
