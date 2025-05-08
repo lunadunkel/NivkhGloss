@@ -1,0 +1,23 @@
+import torch
+from torch.utils.data import Dataset
+
+def prepare_sequence(seq, to_ix):
+    return torch.tensor([to_ix[word] if word in to_ix else to_ix['<UNK>'] for word in seq], dtype=torch.long)
+
+class PosDataset(Dataset):
+    def __init__(self, sentences, device='cpu'):
+        self.sentences = sentences
+        self.device = device
+
+    def __len__(self):
+        return len(self.sentences)
+
+    def __getitem__(self, idx):
+        sentence = self.sentences[idx]
+        answer = dict()
+        answer['input_ids'] = prepare_sequence(sentence['input'].split('\t'), WORD_TO_IDX).to(self.device)
+        answer['char_ids'] = prepare_sequence(list(sentence['input'].replace('\t', '#')), char_dict).to(self.device)
+        answer['labels'] = prepare_sequence(sentence['label'].split('\t'), TAG_TO_IDX).to(self.device)
+        answer['mask'] = answer['input_ids'] != 0
+        answer['index']
+        return answer
