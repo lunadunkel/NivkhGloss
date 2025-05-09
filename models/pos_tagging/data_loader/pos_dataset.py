@@ -22,5 +22,5 @@ class PosDataset(Dataset):
         answer['char_ids'] = prepare_sequence(list(sentence['input'].replace('\t', '#')), self.char_dict).to(self.device)
         answer['labels'] = prepare_sequence(sentence['label'].split('\t'), self.char_dict).to(self.device)
         answer['mask'] = answer['input_ids'] != 0
-        answer['index']
+        answer['index'] = idx
         return answer
