@@ -1,4 +1,4 @@
-from NivkhGloss.functions.data_processing.bpe_labels import get_bpe_boundary_labels
+from NivkhGloss.models.segmentation.data_processing.bpe_labels import get_bpe_boundary_labels
 
 def sample_with_bpe(sp, sample):
     new_sample = []
