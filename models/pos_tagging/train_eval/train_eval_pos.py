@@ -2,6 +2,7 @@ from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 import numpy as np
 import torch
+import os
 
 def compute_accuracy(preds, labels, ignore_index=0):
     preds = preds.view(-1).cpu().numpy()
