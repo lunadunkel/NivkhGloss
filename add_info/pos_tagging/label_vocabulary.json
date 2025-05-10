@@ -1,1 +1,0 @@
-{"NOUN": 1, "VERB": 2, "ADV": 3, "ADJ": 4, "PRON": 5, "NUM": 6, "DET": 7, "FUNC": 8, "ADP": 9, "PART": 10, "<SPEECH>": 11, "SCONJ": 12, "INTJ": 13, "SPEC": 14, "PROPN": 15, "CCONJ": 16, "UNK": 17, "PUNCT": 18, "<PAD>": 0}
