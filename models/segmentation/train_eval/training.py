@@ -36,9 +36,9 @@ def train_model(model, optimizer, train_loader, val_loader, use_bpe=False,
 
             loss.backward()
             optimizer.step()
-
+            
             train_loss += loss.item()
-
+	
 	print(f"Training Loss: {train_loss:.4f})
 	print()
         # валидация
