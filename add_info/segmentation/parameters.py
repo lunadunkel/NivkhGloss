@@ -1,4 +1,4 @@
-from NivkhGloss.add_info.char_dict import char_dict
+from NivkhGloss.add_info.segmentation.char_dict import char_dict
 
 VOCAB_SIZE = len(char_dict)
 EMBED_DIM = 256
