@@ -1,6 +1,7 @@
 import torch
-from NivkhGloss.add_info.char_dict import char_dict
-from NivkhGloss.add_info.label_dict import label_dict
+
+from NivkhGloss.add_info.segmentation.char_dict import char_dict
+from NivkhGloss.add_info.segmentation.label_dict import label_dict
 
 def encode_sample(word, labels, device='cpu'):
     x = torch.tensor([char_dict[char] if char in char_dict else char_dict['<UNK>'] for char in word], dtype=torch.int64).to(device)
