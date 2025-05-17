@@ -39,8 +39,8 @@ def train_model(model, optimizer, train_loader, val_loader, use_bpe=False,
             
             train_loss += loss.item()
 	
-	print(f"Training Loss: {train_loss:.4f})
-	print()
+    	print(f"Training Loss: {train_loss:.4f})
+    	print()
         # валидация
         val_loss, val_accuracy, word_level_accuracy = validate_model(model, val_loader, device, use_bpe=use_bpe)
         print(f"\nValidation - Loss: {val_loss:.4f}, Accuracy: {val_accuracy:.4f}, Word-level: {word_level_accuracy:.4f}")
