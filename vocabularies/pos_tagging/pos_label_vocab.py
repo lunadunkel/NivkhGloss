@@ -1,0 +1,1 @@
+pos_label_vocab = {'VERB': 1, 'NOUN': 2, 'PRON': 3, 'FUNC': 4, 'ADV': 5, 'DET': 6, 'NUM': 7, 'PROPN': 8, 'ADP': 9, '<PAD>': 0}
