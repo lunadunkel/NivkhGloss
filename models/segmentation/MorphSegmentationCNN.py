@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from NivkhGloss.model.segmentation.BasicNeuralClassifier import BasicNeuralClassifier
+from NivkhGloss.models.segmentation.BasicNeuralClassifier import BasicNeuralClassifier
 
 class MorphSegmentationCNN(BasicNeuralClassifier):
 
