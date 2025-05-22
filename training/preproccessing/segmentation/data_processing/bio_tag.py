@@ -1,6 +1,9 @@
 import re
 
 def make_bio(segm):
+	"""	
+	получение BIO-разметки 
+	"""
     bio_tag = []
     new_begining = True
     for letter in segm:

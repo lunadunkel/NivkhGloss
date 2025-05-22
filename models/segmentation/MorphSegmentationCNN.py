@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from NivkhGloss.classes.BasicNeuralClassifier import BasicNeuralClassifier
 
-class MultilayerConvTagger(BasicNeuralClassifier):
+class MorphSegmentationCNN(BasicNeuralClassifier):
 
     def build_network(self, vocab_size, labels_number, embeddings_dim=32, use_bpe=False,
                       n_layers=1, window=5, hidden_dim=128, dropout=0.0, bpe_vocab_size=None,

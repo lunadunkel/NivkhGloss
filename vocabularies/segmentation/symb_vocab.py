@@ -1,4 +1,4 @@
-char_dict = {
+symb_vocab = {
   ".": 1,
   "«": 2,
   "с": 3,
