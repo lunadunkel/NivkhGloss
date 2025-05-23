@@ -2,7 +2,7 @@
 
 Сегментация через BIO-разметку
 
-<img src="add_data/architecture/cnn_scheme.png" alt="Архитектура модели сегментации">
+<img src="add_data/architecture/cnn_scheme.png" width=1500 height=1900 alt="Архитектура модели сегментации">
 
 |модель  |  Accuracy  |  Word Accuracy        |
 |--------|------------|-----------------------|
