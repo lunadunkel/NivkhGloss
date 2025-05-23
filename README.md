@@ -8,7 +8,7 @@
 
 ## Архитектура сегментации
 
-[!Image] <img src="add_data/architecture/cnn_scheme.png" width=300 height=800 alt="Архитектура модели сегментации">
+[!Image] <img src="add_data/architecture/cnn_scheme.png" width=400 height=800 alt="Архитектура модели сегментации">
 
 |модель  |  Accuracy  |  Word Accuracy        |
 |--------|------------|-----------------------|
