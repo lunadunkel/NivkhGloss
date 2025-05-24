@@ -2,9 +2,9 @@ import re
 import os
 
 def clear_data(path, filename):
-	""" 
-	первичная предобработка текста
-	"""
+    """ 
+    первичная предобработка текста
+    """
     new_data = []
     full_path = f'{path}/{filename}'
     with open(full_path, 'r', encoding='utf8') as file:
