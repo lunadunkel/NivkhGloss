@@ -22,7 +22,7 @@ class GlossingWithLemmas:
         """ возвращает эмбеддинг предложения """
         lemmatized_translation = [word.lemma_ for word in self.spacy_lemmatizer(translation) 
                     if word.text not in self.punctuation]
-        mean_emb = np.mean([navec[word] for word in lemmatized_translation if word in navec], axis=0)
+        mean_emb = np.mean([self.navec[word] for word in lemmatized_translation if word in self.navec], axis=0)
         return mean_emb
 
     def _find_in_stem_vocab(self, word, gloss, translation):
@@ -33,7 +33,7 @@ class GlossingWithLemmas:
         if len(poss_definitions) == 1: 
             cosine = 0.5
             real_word = poss_definitions[0]
-            if real_word in navec:
+            if real_word in self.navec:
                 cosine = self._cosine_similarity(self.navec[real_word], mean_emb)
             return '.'.join(poss_definitions[0].split()), cosine
 
@@ -41,7 +41,7 @@ class GlossingWithLemmas:
 
         for word in poss_definitions:
             real_word = ' '.join(word.split('.')) 
-            if real_word in navec:
+            if real_word in self.navec:
                 cosine = self._cosine_similarity(self.navec[real_word], mean_emb)
                 if max_similarity is None or cosine > max_similarity:
                     max_similarity = cosine
@@ -101,7 +101,7 @@ class GlossingWithLemmas:
             prev_word = '#'
         prev_word = re.sub('ь$', '', prev_word)
 
-        hyps = deque([(trie.root, "", 0)])
+        hyps = deque([(self.trie.root, "", 0)])
         candidates = set()
 
         while hyps:
