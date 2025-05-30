@@ -53,7 +53,4 @@ def download_navec():
     navec = Navec.load(path)
     return navec
 
-
 install_dependencies()
-nlp = download_spacy_model()
-navec = download_navec()
