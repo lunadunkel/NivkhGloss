@@ -23,8 +23,8 @@ class GlossText:
         final_glossing = []
         if translation is None:
             translation = [None * len(text)] 
-        for num, sent in enumerate(zip(text, translation)):
-            answer = self.gloss_sent(sent, translation)
+        for num, (sent, trans) in enumerate(zip(text, translation)):
+            answer = self.gloss_sent(sent, trans)
             segmentation = f'{num}>\t' + answer['segmentation']
             glossing = f'{num}<\t' + answer['glossing']
             final_glossing.append('\n'.join([segmentation, glossing]))
