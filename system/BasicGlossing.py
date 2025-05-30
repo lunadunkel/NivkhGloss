@@ -104,6 +104,7 @@ class BasicGlossing:
         self.pos_model.eval()
         pos_tags = []
         for word in sent.split('\t'):
+            word = re.sub('[\.\,\!\?]+', '', word)
             word_ids = self._encode_sample(word, self.word_vocab)
             char_ids = self._encode_sample(word, self.char_vocab)
             with torch.no_grad():
@@ -132,6 +133,7 @@ class BasicGlossing:
             stem, word_glosses = False, []
             pos = pos_tag
             for morph in morphemes:
+                morph = re.sub('[\.\:\,\!\!]+', '', morph)
                 if morph in self.glosses_dictionary:
                     row = self.glosses_dictionary[morph]
                     true_gloss = self._find_correct_gloss(row, pos, stem=stem)

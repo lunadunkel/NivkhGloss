@@ -62,6 +62,7 @@ class GlossingWithLemmas:
             word_parts, gloss_parts = word.split('-'), gloss.split('-')
             word_glosses = []
             for w, g in zip(word_parts, gloss_parts):
+                w = w.replace('.,:!?', '')
                 if g == 'PROPN':
                     word_glosses.append(w)
                     continue
@@ -80,7 +81,10 @@ class GlossingWithLemmas:
                         answer = self._find_in_stem_vocab(cand[0], 'ADJ', translation)
                     possible_stems.append(answer)
                 
-                true_gloss = sorted(possible_stems, key=lambda x: -x[1])[0][0]
+                if not possible_stems:
+                    true_gloss = 'UNK'
+                else:
+                    true_gloss = sorted(possible_stems, key=lambda x: -x[1])[0][0]
                 word_glosses.append(true_gloss)
             final_glosses.append('-'.join(word_glosses))
 
