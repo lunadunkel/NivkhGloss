@@ -8,7 +8,7 @@
 
 > [!TIP] 
 > Для инференса можно использовать HF Spaces
-> По [ссылке]{https://huggingface.co/spaces/lunadunkel/NivkhGloss/} можно опробовать модель на CPU.
+> По [ссылке](https://huggingface.co/spaces/lunadunkel/NivkhGloss) можно опробовать модель на CPU.
 
 Для более удобного пользования (в том числе глоссирования целого текста) лучше использовать colab. Для запуска необходимо:
 
